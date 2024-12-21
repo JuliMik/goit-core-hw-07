@@ -2,27 +2,6 @@ from collections import UserDict
 from datetime import datetime, date, timedelta
 
 
-def input_error(func):
-    def inner(*args, **kwargs):
-        try:
-            return func(*args, **kwargs)
-        except KeyError:
-            return "The contact exists"
-        except ValueError:
-            return "Please enter the correct arguments"
-        except IndexError:
-            return "No such contacts"
-
-    return inner
-
-
-# Парсинг введеної строки
-def parse_input(user_input):
-    cmd, *args = user_input.split()
-    cmd = cmd.strip().lower()
-    return cmd, *args
-
-
 class Field:
     def __init__(self, value):
         self.value = value
@@ -47,7 +26,7 @@ class Phone(Field):
 class Birthday(Field):
     def __init__(self, value):
         try:
-            self.value = datetime.strptime(value, '%d.%m.%Y').date()
+            self.value = str(datetime.strptime(value, '%d.%m.%Y').date())
             super().__init__(self.value)
         except ValueError:
             raise ValueError("Invalid date format. Use DD.MM.YYYY")
@@ -141,6 +120,27 @@ class AddressBook(UserDict):
         return result
 
 
+def input_error(func):
+    def inner(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except KeyError:
+            return "The contact exists"
+        except ValueError:
+            return "Please enter the correct arguments"
+        except IndexError:
+            return "No such contacts"
+
+    return inner
+
+
+# Парсинг введеної строки
+def parse_input(user_input):
+    cmd, *args = user_input.split()
+    cmd = cmd.strip().lower()
+    return cmd, *args
+
+
 @input_error
 def add_contact(args, book: AddressBook):
     name, phone, *_ = args
@@ -161,11 +161,8 @@ def change_contact(args, book: AddressBook):
     name, old_phone, new_phone, *_ = args
     record = book.find(name)
     if record:
-        if record.find_phone(old_phone):
-            record.edit_phone(old_phone, new_phone)
-            return "Contact updated."
-        else:
-            return f"Number {old_phone} is not {name}'s phone number!"
+        record.edit_phone(old_phone, new_phone)
+        return "Contact updated."
     else:
         return f'Contact {name} is not in the list'
 
@@ -176,7 +173,7 @@ def show_phone(args, book: AddressBook):
     name, *_ = args
     record = book.find(name)
     if record:
-        return record
+        return f"Contact {name}, phone: {', '.join(phone.value for phone in record.phones)}"
     else:
         return f'Contact {name} is not in the list'
 
