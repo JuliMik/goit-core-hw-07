@@ -94,9 +94,10 @@ class AddressBook(UserDict):
 
         for user in self.data.values():
             if user.birthday:
-                birthday_this_year = user.birthday.value.replace(year=today.year)
+                user_birthday = datetime.strptime(user.birthday.value, "%Y-%m-%d").date()
+                birthday_this_year = user_birthday.replace(year=today.year)
                 if birthday_this_year < today:
-                    birthday_this_year = user.birthday.value.replace(year=today.year + 1)
+                    birthday_this_year = user_birthday.replace(year=today.year + 1)
                 if 0 <= (birthday_this_year - today).days <= days:
                     if birthday_this_year.weekday() >= 5:
                         days_ahead = 0 - birthday_this_year.weekday()
